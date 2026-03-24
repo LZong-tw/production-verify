@@ -8,4 +8,5 @@ export { refreshToken } from './smoke/session/refresh-token';
 export { noAuth } from './smoke/session/no-auth';
 export { runVerification } from './runner';
 export { resolveReporters } from './reporter/index';
+export { extractCookies, formatCookies } from './smoke/session/index';
 export type * from './types';
