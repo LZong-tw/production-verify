@@ -1,5 +1,6 @@
 import type { VerifyConfig, VerificationReport, Reporter, CheckResult, ProofResult } from './types';
 import { runSmokeChecks } from './smoke/runner';
+import { runProofs } from './proof/engine';
 import { resolveReporters } from './reporter/index';
 
 export async function runVerification(
@@ -35,9 +36,7 @@ export async function runVerification(
 
   // Proof (architecture proofs via plugin)
   if (config.proof && (command === 'all' || command === 'proof')) {
-    const proofResults = await config.proof.run(config);
-
-    const passed = proofResults.every((r) => r.passed);
+    const { results: proofResults, passed } = await runProofs(config, config.proof);
     report.proof = { results: proofResults, passed };
 
     for (const result of proofResults) {

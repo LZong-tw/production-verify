@@ -94,6 +94,11 @@ export interface ProofConfig {
   run(config: VerifyConfig): Promise<ProofResult[]>;
 }
 
+// --- Runner ---
+export interface VerifyRunner {
+  run(config: VerifyConfig): Promise<VerificationReport>;
+}
+
 // --- Contracts ---
 export interface GuardContract {
   kind: 'guard' | 'middleware' | 'decorator' | 'strategy';

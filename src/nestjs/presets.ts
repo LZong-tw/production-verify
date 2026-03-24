@@ -7,13 +7,8 @@ export function nestjsDefaults(): NestJSPreset {
     },
     rules: {
       'no-duplicate-guards': 'error',
-      'require-auth-for-user-reads': 'error',
-      'require-permission-implies-guard': 'error',
-      'req-property-coverage': 'error',
       'config-key-alignment': 'warn',
-      'no-direct-env-for-validated-keys': 'warn',
       'trust-proxy': 'error',
-      'broken-contract': 'error',
     },
   };
 }

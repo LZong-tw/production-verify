@@ -7,6 +7,8 @@ export { turnstileBypass } from './smoke/session/turnstile-bypass';
 export { refreshToken } from './smoke/session/refresh-token';
 export { noAuth } from './smoke/session/no-auth';
 export { runVerification } from './runner';
+export { runProofs } from './proof/engine';
+export { mergeContracts } from './proof/contracts';
 export { resolveReporters } from './reporter/index';
 export { extractCookies, formatCookies } from './smoke/session/index';
 export type * from './types';

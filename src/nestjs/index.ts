@@ -10,6 +10,7 @@ import type {
   NestJSProofPlugin,
   NestJSProofContext,
 } from '../types.js';
+import { mergeContracts } from '../proof/contracts.js';
 import { proveGuardComposition } from './rules/guard-composition.js';
 import { proveDataFlow } from './rules/data-flow.js';
 import { proveTopology } from './rules/topology.js';
@@ -33,15 +34,14 @@ function mergePresets(
   contracts: Record<string, GuardContract>;
   rules: Record<string, any>;
 } {
-  const contracts: Record<string, GuardContract> = {};
+  const presetContracts = presets.map(p => p.contracts);
+  const contracts = mergeContracts(...presetContracts, userContracts);
   const rules: Record<string, any> = {};
 
   for (const preset of presets) {
-    if (preset.contracts) Object.assign(contracts, preset.contracts);
     if (preset.rules) Object.assign(rules, preset.rules);
   }
 
-  if (userContracts) Object.assign(contracts, userContracts);
   if (userRules) Object.assign(rules, userRules);
 
   return { contracts, rules };

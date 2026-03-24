@@ -83,14 +83,12 @@ describe('nestjs() wrapper', () => {
       },
       bootstrapExclusions: ['app.service.ts'],
       rules: {
-        // Only run the env rule to isolate the test
+        // Disable default rules to isolate the env rule
         'no-duplicate-guards': false,
-        'require-auth-for-user-reads': false,
-        'require-permission-implies-guard': false,
-        'req-property-coverage': false,
         'config-key-alignment': false,
         'trust-proxy': false,
-        'broken-contract': false,
+        // Enable the env rule (not in defaults, so must be explicit)
+        'no-direct-env-for-validated-keys': 'warn',
       },
     });
 
