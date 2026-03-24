@@ -38,8 +38,9 @@ describe('turnstileBypass', () => {
     vi.unstubAllEnvs();
   });
 
-  it('throws when secret is empty', () => {
-    expect(() => turnstileBypass({ secret: '' })).toThrow(
+  it('throws when secret is empty', async () => {
+    const provider = turnstileBypass({ secret: '' });
+    await expect(provider('https://example.com')).rejects.toThrow(
       'Turnstile bypass secret is required',
     );
   });

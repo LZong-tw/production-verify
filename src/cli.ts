@@ -21,22 +21,35 @@ async function main() {
   const jiti = createJiti(process.cwd());
   const candidates = configPath
     ? [configPath]
-    : ['verify.config.ts', 'verify.config.js', 'production-verify.config.ts'];
+    : ['./verify.config.ts', './verify.config.js', './production-verify.config.ts'];
 
   let config;
+  let lastError: unknown;
   for (const candidate of candidates) {
     try {
       const mod = await jiti.import(candidate);
       config = (mod as any).default || mod;
       if (verbose) console.log(`Loaded config from ${candidate}`);
       break;
-    } catch {
-      continue;
+    } catch (err: unknown) {
+      lastError = err;
+      // Only continue searching if the file wasn't found.
+      // If the file was found but has errors, surface that immediately.
+      const code = (err as { code?: string })?.code;
+      if (code === 'ERR_MODULE_NOT_FOUND' || code === 'MODULE_NOT_FOUND') {
+        continue;
+      }
+      // Config file exists but has a runtime error — report it
+      console.error(`Error loading ${candidate}:`, err instanceof Error ? err.message : err);
+      process.exit(1);
     }
   }
 
   if (!config) {
     console.error('No config file found. Create verify.config.ts or use --config <path>');
+    if (verbose && lastError) {
+      console.error('Last error:', lastError instanceof Error ? lastError.message : lastError);
+    }
     process.exit(1);
   }
 

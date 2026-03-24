@@ -8,11 +8,10 @@ export interface TurnstileBypassOptions {
 }
 
 export function turnstileBypass(options: TurnstileBypassOptions): SessionProvider {
-  if (!options.secret) {
-    throw new Error('Turnstile bypass secret is required');
-  }
-
   return async (baseUrl: string) => {
+    if (!options.secret) {
+      throw new Error('Turnstile bypass secret is required');
+    }
     const email = options.email || process.env.VERIFY_EMAIL || '';
     const password = options.password || process.env.VERIFY_PASSWORD || '';
     if (!password) {
