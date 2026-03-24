@@ -58,6 +58,22 @@ export async function runVerification(
 
     const passed = constraints.every((c) => c.passed);
     report.infrastructure = { constraints, passed };
+
+    // Emit infrastructure results to reporters as CheckResults
+    for (const constraint of constraints) {
+      const checkResult: CheckResult = {
+        name: `infra:${constraint.name}`,
+        passed: constraint.passed,
+        severity: constraint.passed ? 'info' : 'error',
+        message: constraint.passed
+          ? `${constraint.name}: ${constraint.actual} matches ${constraint.expected}`
+          : `${constraint.name}: expected ${constraint.expected}, got ${constraint.actual}`,
+        durationMs: 0,
+      };
+      for (const reporter of reporters) {
+        reporter.onResult(checkResult);
+      }
+    }
   }
 
   // Compute overall pass/fail based on policy

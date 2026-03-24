@@ -1,3 +1,4 @@
+import { Project } from 'ts-morph';
 import type {
   NestJSProofOptions,
   NestJSPreset,
@@ -32,11 +33,11 @@ function mergePresets(
   userRules?: Record<string, RuleSeverity | RuleConfig>,
 ): {
   contracts: Record<string, GuardContract>;
-  rules: Record<string, any>;
+  rules: Record<string, RuleSeverity | RuleConfig>;
 } {
   const presetContracts = presets.map(p => p.contracts);
   const contracts = mergeContracts(...presetContracts, userContracts);
-  const rules: Record<string, any> = {};
+  const rules: Record<string, RuleSeverity | RuleConfig> = {};
 
   for (const preset of presets) {
     if (preset.rules) Object.assign(rules, preset.rules);
@@ -63,12 +64,19 @@ export function nestjs(options: NestJSProofOptions): ProofConfig {
       const { srcPath, tsconfigPath } = options;
       const results: ProofResult[] = [];
 
+      // Create a single shared ts-morph Project for all collectors and rules
+      const project = new Project({
+        tsConfigFilePath: tsconfigPath,
+        skipAddingFilesFromTsConfig: true,
+      });
+      project.addSourceFilesAtPaths(`${srcPath}/**/*.ts`);
+
       // Guard composition rules
       results.push(
         ...proveGuardComposition(srcPath, tsconfigPath, {
           contracts: merged.contracts,
           rules: merged.rules,
-        }),
+        }, project),
       );
 
       // Data flow rules
@@ -76,7 +84,7 @@ export function nestjs(options: NestJSProofOptions): ProofConfig {
         ...proveDataFlow(srcPath, tsconfigPath, {
           contracts: merged.contracts,
           rules: merged.rules,
-        }),
+        }, project),
       );
 
       // Topology rules
@@ -84,7 +92,7 @@ export function nestjs(options: NestJSProofOptions): ProofConfig {
         ...proveTopology(srcPath, tsconfigPath, {
           rules: merged.rules,
           bootstrapExclusions: options.bootstrapExclusions,
-        }),
+        }, project),
       );
 
       // Contract validation rules
@@ -92,7 +100,7 @@ export function nestjs(options: NestJSProofOptions): ProofConfig {
         ...proveContractValidation(srcPath, tsconfigPath, {
           contracts: merged.contracts,
           rules: merged.rules,
-        }),
+        }, project),
       );
 
       // Plugin rules
@@ -101,6 +109,7 @@ export function nestjs(options: NestJSProofOptions): ProofConfig {
           srcPath,
           tsconfigPath,
           merged.contracts,
+          project,
         );
         for (const plugin of options.plugins) {
           results.push(
@@ -118,11 +127,12 @@ function buildPluginContext(
   srcPath: string,
   tsconfigPath: string,
   contracts: Record<string, GuardContract>,
+  existingProject?: Project,
 ): NestJSProofContext {
-  const routes = collectRoutes(srcPath, tsconfigPath);
-  const globalGuards = collectGlobalGuards(srcPath, tsconfigPath);
-  const configKeys = collectConfigKeys(srcPath, tsconfigPath);
-  const allProps = collectReqProperties(srcPath, tsconfigPath);
+  const routes = collectRoutes(srcPath, tsconfigPath, existingProject);
+  const globalGuards = collectGlobalGuards(srcPath, tsconfigPath, existingProject);
+  const configKeys = collectConfigKeys(srcPath, tsconfigPath, existingProject);
+  const allProps = collectReqProperties(srcPath, tsconfigPath, existingProject);
 
   return {
     routes,
@@ -137,7 +147,7 @@ function buildPluginContext(
 function runPlugin(
   plugin: NestJSProofPlugin,
   context: NestJSProofContext,
-  mergedRules: Record<string, any>,
+  mergedRules: Record<string, RuleSeverity | RuleConfig>,
 ): ProofResult[] {
   const results: ProofResult[] = [];
 
@@ -150,15 +160,12 @@ function runPlugin(
       const result = rule.run(context);
 
       // Override severity if user specified
-      if (
-        userSetting === 'error' ||
-        userSetting === 'warn' ||
-        userSetting === 'info'
-      ) {
+      if (typeof userSetting === 'string') {
         result.severity = userSetting;
       } else if (
         typeof userSetting === 'object' &&
-        userSetting?.severity !== undefined &&
+        userSetting !== null &&
+        'severity' in userSetting &&
         userSetting.severity !== false
       ) {
         result.severity = userSetting.severity;

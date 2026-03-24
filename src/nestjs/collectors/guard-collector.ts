@@ -4,12 +4,15 @@ import type { GlobalGuardInfo, GuardUsage } from '../../types.js';
 export function collectGlobalGuards(
   srcPath: string,
   tsconfigPath: string,
+  existingProject?: Project,
 ): GlobalGuardInfo[] {
-  const project = new Project({
+  const project = existingProject ?? new Project({
     tsConfigFilePath: tsconfigPath,
     skipAddingFilesFromTsConfig: true,
   });
-  project.addSourceFilesAtPaths(`${srcPath}/**/app.module.ts`);
+  if (!existingProject) {
+    project.addSourceFilesAtPaths(`${srcPath}/**/app.module.ts`);
+  }
 
   const globals: GlobalGuardInfo[] = [];
 
@@ -33,12 +36,15 @@ export function collectGlobalGuards(
 export function collectGuardUsages(
   srcPath: string,
   tsconfigPath: string,
+  existingProject?: Project,
 ): GuardUsage[] {
-  const project = new Project({
+  const project = existingProject ?? new Project({
     tsConfigFilePath: tsconfigPath,
     skipAddingFilesFromTsConfig: true,
   });
-  project.addSourceFilesAtPaths(`${srcPath}/**/*.controller.ts`);
+  if (!existingProject) {
+    project.addSourceFilesAtPaths(`${srcPath}/**/*.controller.ts`);
+  }
 
   const usages: GuardUsage[] = [];
 

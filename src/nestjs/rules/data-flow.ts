@@ -2,29 +2,21 @@ import type {
   ProofResult,
   Violation,
   GuardContract,
+  RuleSeverity,
+  RuleConfig,
   Severity,
 } from '../../types.js';
 import { collectReqProperties } from '../collectors/req-property-collector.js';
-
-function resolveSeverity(
-  rules: Record<string, any>,
-  ruleName: string,
-  defaultSeverity: Severity,
-): Severity | false {
-  const val = rules[ruleName];
-  if (val === false) return false;
-  if (val === 'error' || val === 'warn' || val === 'info') return val;
-  if (typeof val === 'object' && val?.severity !== undefined) return val.severity;
-  return defaultSeverity;
-}
+import { resolveSeverity } from './utils.js';
 
 export function proveDataFlow(
   srcPath: string,
   tsconfigPath: string,
   config: {
     contracts: Record<string, GuardContract>;
-    rules: Record<string, any>;
+    rules: Record<string, RuleSeverity | RuleConfig>;
   },
+  existingProject?: import('ts-morph').Project,
 ): ProofResult[] {
   const results: ProofResult[] = [];
 
@@ -35,7 +27,7 @@ export function proveDataFlow(
   );
   if (severity === false) return results;
 
-  const props = collectReqProperties(srcPath, tsconfigPath);
+  const props = collectReqProperties(srcPath, tsconfigPath, existingProject);
   const reads = props.filter((p) => p.kind === 'read');
   const writes = props.filter((p) => p.kind === 'write');
 

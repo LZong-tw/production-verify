@@ -4,6 +4,7 @@ import type {
   ProofResult,
   VerificationReport,
 } from '../types';
+import { isCheckResult } from '../types';
 
 const PASS = '\u2713';
 const FAIL = '\u2717';
@@ -18,9 +19,9 @@ export function consoleReporter(): Reporter {
 
     onResult(result: CheckResult | ProofResult): void {
       const icon = result.passed ? PASS : FAIL;
-      if ('durationMs' in result) {
+      if (isCheckResult(result)) {
         // CheckResult (smoke)
-        const r = result as CheckResult;
+        const r = result;
         console.log(
           `  ${icon} [${formatSeverity(r.severity)}] ${r.name} (${r.durationMs}ms)`,
         );
@@ -29,7 +30,7 @@ export function consoleReporter(): Reporter {
         }
       } else {
         // ProofResult
-        const r = result as ProofResult;
+        const r = result;
         console.log(
           `  ${icon} [${formatSeverity(r.severity)}] [${r.category}] ${r.rule}`,
         );

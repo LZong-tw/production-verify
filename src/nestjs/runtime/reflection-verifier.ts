@@ -22,7 +22,9 @@ export interface ReflectionResult {
 export async function verifyWithReflection(
   app: any, // INestApplication — kept as `any` to avoid requiring @nestjs/common as dependency
 ): Promise<ReflectionResult> {
+  // @ts-expect-error @nestjs/core is not a dependency — used at runtime only
   const { DiscoveryService } = await import('@nestjs/core');
+  // @ts-expect-error @nestjs/core is not a dependency — used at runtime only
   const { Reflector } = await import('@nestjs/core');
 
   const discovery = app.get(DiscoveryService);
@@ -46,14 +48,14 @@ export async function verifyWithReflection(
 
     for (const methodName of methods) {
       const handler = prototype[methodName];
-      const httpMethod = Reflect.getMetadata('method', handler);
+      const httpMethod = (Reflect as any).getMetadata('method', handler);
       if (httpMethod === undefined) continue;
 
       routeCount++;
 
-      const guards = Reflect.getMetadata('__guards__', handler) || [];
+      const guards = (Reflect as any).getMetadata('__guards__', handler) || [];
       const classGuards =
-        Reflect.getMetadata('__guards__', instance.constructor) || [];
+        (Reflect as any).getMetadata('__guards__', instance.constructor) || [];
       const allGuards = [...classGuards, ...guards].map(
         (g: any) => g.name || g.constructor?.name || 'Unknown',
       );

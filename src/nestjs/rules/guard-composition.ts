@@ -3,6 +3,7 @@ import type {
   Violation,
   GuardContract,
   RuleSeverity,
+  RuleConfig,
   Severity,
 } from '../../types.js';
 import { collectRoutes } from '../collectors/route-collector.js';
@@ -10,30 +11,20 @@ import {
   collectGlobalGuards,
   collectGuardUsages,
 } from '../collectors/guard-collector.js';
-
-function resolveSeverity(
-  rules: Record<string, any>,
-  ruleName: string,
-  defaultSeverity: Severity,
-): Severity | false {
-  const val = rules[ruleName];
-  if (val === false) return false;
-  if (val === 'error' || val === 'warn' || val === 'info') return val;
-  if (typeof val === 'object' && val?.severity !== undefined) return val.severity;
-  return defaultSeverity;
-}
+import { resolveSeverity } from './utils.js';
 
 export function proveGuardComposition(
   srcPath: string,
   tsconfigPath: string,
   config: {
     contracts: Record<string, GuardContract>;
-    rules: Record<string, any>;
+    rules: Record<string, RuleSeverity | RuleConfig>;
   },
+  existingProject?: import('ts-morph').Project,
 ): ProofResult[] {
-  const routes = collectRoutes(srcPath, tsconfigPath);
-  const globalGuards = collectGlobalGuards(srcPath, tsconfigPath);
-  const guardUsages = collectGuardUsages(srcPath, tsconfigPath);
+  const routes = collectRoutes(srcPath, tsconfigPath, existingProject);
+  const globalGuards = collectGlobalGuards(srcPath, tsconfigPath, existingProject);
+  const guardUsages = collectGuardUsages(srcPath, tsconfigPath, existingProject);
 
   const globalGuardNames = globalGuards.map((g) => g.guardClass);
   const results: ProofResult[] = [];

@@ -7,10 +7,18 @@ import type { ConfigKeyUsage, JoiSchemaKey } from '../../types.js';
 export function collectConfigKeys(
   srcPath: string,
   tsconfigPath: string,
+  existingProject?: Project,
 ): { used: ConfigKeyUsage[]; joi: JoiSchemaKey[] } {
+  const project = existingProject ?? new Project({
+    tsConfigFilePath: tsconfigPath,
+    skipAddingFilesFromTsConfig: true,
+  });
+  if (!existingProject) {
+    project.addSourceFilesAtPaths(`${srcPath}/**/*.ts`);
+  }
   return {
-    used: collectConfigServiceKeys(srcPath, tsconfigPath),
-    joi: collectJoiSchemaKeys(srcPath, tsconfigPath),
+    used: collectConfigServiceKeys(project),
+    joi: collectJoiSchemaKeys(project),
   };
 }
 
@@ -18,14 +26,8 @@ export function collectConfigKeys(
  * Collect all configService.get('KEY') calls in source files.
  */
 function collectConfigServiceKeys(
-  srcPath: string,
-  tsconfigPath: string,
+  project: Project,
 ): ConfigKeyUsage[] {
-  const project = new Project({
-    tsConfigFilePath: tsconfigPath,
-    skipAddingFilesFromTsConfig: true,
-  });
-  project.addSourceFilesAtPaths(`${srcPath}/**/*.ts`);
 
   const keys: ConfigKeyUsage[] = [];
 
@@ -58,14 +60,8 @@ function collectConfigServiceKeys(
  * Collect all keys from the Joi validation schema in app.module.ts.
  */
 function collectJoiSchemaKeys(
-  srcPath: string,
-  tsconfigPath: string,
+  project: Project,
 ): JoiSchemaKey[] {
-  const project = new Project({
-    tsConfigFilePath: tsconfigPath,
-    skipAddingFilesFromTsConfig: true,
-  });
-  project.addSourceFilesAtPaths(`${srcPath}/**/app.module.ts`);
 
   const keys: JoiSchemaKey[] = [];
 
@@ -107,12 +103,15 @@ function collectJoiSchemaKeys(
 export function collectDirectEnvAccess(
   srcPath: string,
   tsconfigPath: string,
+  existingProject?: Project,
 ): ConfigKeyUsage[] {
-  const project = new Project({
+  const project = existingProject ?? new Project({
     tsConfigFilePath: tsconfigPath,
     skipAddingFilesFromTsConfig: true,
   });
-  project.addSourceFilesAtPaths(`${srcPath}/**/*.ts`);
+  if (!existingProject) {
+    project.addSourceFilesAtPaths(`${srcPath}/**/*.ts`);
+  }
 
   const keys: ConfigKeyUsage[] = [];
 

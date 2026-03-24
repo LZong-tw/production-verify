@@ -9,7 +9,7 @@ async function main() {
   }
 
   const args = process.argv.slice(2);
-  const command = args.find((a) => ['smoke', 'proof'].includes(a));
+  const command = args.find((a) => ['smoke', 'proof', 'infrastructure'].includes(a));
   const configFlag = args.indexOf('--config');
   const configPath = configFlag >= 0 ? args[configFlag + 1] : undefined;
   const verbose = args.includes('--verbose');

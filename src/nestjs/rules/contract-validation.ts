@@ -3,20 +3,11 @@ import type {
   ProofResult,
   Violation,
   GuardContract,
+  RuleSeverity,
+  RuleConfig,
   Severity,
 } from '../../types.js';
-
-function resolveSeverity(
-  rules: Record<string, any>,
-  ruleName: string,
-  defaultSeverity: Severity,
-): Severity | false {
-  const val = rules[ruleName];
-  if (val === false) return false;
-  if (val === 'error' || val === 'warn' || val === 'info') return val;
-  if (typeof val === 'object' && val?.severity !== undefined) return val.severity;
-  return defaultSeverity;
-}
+import { resolveSeverity } from './utils.js';
 
 /**
  * For each contract that declares `writes`, verify the guard/middleware file
@@ -28,8 +19,9 @@ export function proveContractValidation(
   tsconfigPath: string,
   config: {
     contracts: Record<string, GuardContract>;
-    rules: Record<string, any>;
+    rules: Record<string, RuleSeverity | RuleConfig>;
   },
+  existingProject?: Project,
 ): ProofResult[] {
   const severity = resolveSeverity(
     config.rules,
@@ -38,15 +30,17 @@ export function proveContractValidation(
   );
   if (severity === false) return [];
 
-  const project = new Project({
+  const project = existingProject ?? new Project({
     tsConfigFilePath: tsconfigPath,
     skipAddingFilesFromTsConfig: true,
   });
-  project.addSourceFilesAtPaths([
-    `${srcPath}/**/*.guard.ts`,
-    `${srcPath}/**/*.middleware.ts`,
-    `${srcPath}/**/*.strategy.ts`,
-  ]);
+  if (!existingProject) {
+    project.addSourceFilesAtPaths([
+      `${srcPath}/**/*.guard.ts`,
+      `${srcPath}/**/*.middleware.ts`,
+      `${srcPath}/**/*.strategy.ts`,
+    ]);
+  }
 
   const violations: Violation[] = [];
 

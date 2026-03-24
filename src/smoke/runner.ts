@@ -38,9 +38,8 @@ export async function runSmokeChecks(
       const result = await withTimeout(check(ctx), timeoutMs);
       checks.push(result);
 
-      // After the first check (typically csrfFlow), extract csrfToken
-      // from details so subsequent checks can use it
-      if (i === 0 && result.details?.csrfToken) {
+      // Extract csrfToken from the first check that provides it
+      if (!ctx.csrfToken && result.details?.csrfToken) {
         ctx.csrfToken = result.details.csrfToken as string;
       }
     } catch (err) {
@@ -67,6 +66,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     const timer = setTimeout(() => {
       reject(new Error('Check timed out'));
     }, ms);
+    if (typeof timer !== 'number') timer.unref();
 
     promise.then(
       (val) => {

@@ -22,12 +22,15 @@ const HTTP_DECORATORS = [
 export function collectRoutes(
   srcPath: string,
   tsconfigPath: string,
+  existingProject?: Project,
 ): RouteInfo[] {
-  const project = new Project({
+  const project = existingProject ?? new Project({
     tsConfigFilePath: tsconfigPath,
     skipAddingFilesFromTsConfig: true,
   });
-  project.addSourceFilesAtPaths(`${srcPath}/**/*.controller.ts`);
+  if (!existingProject) {
+    project.addSourceFilesAtPaths(`${srcPath}/**/*.controller.ts`);
+  }
 
   const routes: RouteInfo[] = [];
 

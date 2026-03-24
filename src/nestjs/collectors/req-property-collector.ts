@@ -43,10 +43,23 @@ const STANDARD_PROPS = new Set([
 export function collectReqProperties(
   srcPath: string,
   tsconfigPath: string,
+  existingProject?: Project,
 ): ReqPropertyAccess[] {
+  const project = existingProject ?? new Project({
+    tsConfigFilePath: tsconfigPath,
+    skipAddingFilesFromTsConfig: true,
+  });
+  if (!existingProject) {
+    project.addSourceFilesAtPaths([
+      `${srcPath}/**/*.controller.ts`,
+      `${srcPath}/**/*.guard.ts`,
+      `${srcPath}/**/*.middleware.ts`,
+      `${srcPath}/**/*.strategy.ts`,
+    ]);
+  }
   return [
-    ...collectReqReads(srcPath, tsconfigPath),
-    ...collectReqWrites(srcPath, tsconfigPath),
+    ...collectReqReads(project),
+    ...collectReqWrites(project),
   ];
 }
 
@@ -54,14 +67,8 @@ export function collectReqProperties(
  * Collect req.X reads from controller methods.
  */
 function collectReqReads(
-  srcPath: string,
-  tsconfigPath: string,
+  project: Project,
 ): ReqPropertyAccess[] {
-  const project = new Project({
-    tsConfigFilePath: tsconfigPath,
-    skipAddingFilesFromTsConfig: true,
-  });
-  project.addSourceFilesAtPaths(`${srcPath}/**/*.controller.ts`);
 
   const accesses: ReqPropertyAccess[] = [];
 
@@ -99,18 +106,8 @@ function collectReqReads(
  * Collect req.X writes from guards and middleware.
  */
 function collectReqWrites(
-  srcPath: string,
-  tsconfigPath: string,
+  project: Project,
 ): ReqPropertyAccess[] {
-  const project = new Project({
-    tsConfigFilePath: tsconfigPath,
-    skipAddingFilesFromTsConfig: true,
-  });
-  project.addSourceFilesAtPaths([
-    `${srcPath}/**/*.guard.ts`,
-    `${srcPath}/**/*.middleware.ts`,
-    `${srcPath}/**/*.strategy.ts`,
-  ]);
 
   const accesses: ReqPropertyAccess[] = [];
 

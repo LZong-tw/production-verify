@@ -1,29 +1,19 @@
 import { Project } from 'ts-morph';
-import type { ProofResult, Violation, Severity } from '../../types.js';
+import type { ProofResult, Violation, RuleSeverity, RuleConfig, Severity } from '../../types.js';
 import {
   collectConfigKeys,
   collectDirectEnvAccess,
 } from '../collectors/config-key-collector.js';
-
-function resolveSeverity(
-  rules: Record<string, any>,
-  ruleName: string,
-  defaultSeverity: Severity,
-): Severity | false {
-  const val = rules[ruleName];
-  if (val === false) return false;
-  if (val === 'error' || val === 'warn' || val === 'info') return val;
-  if (typeof val === 'object' && val?.severity !== undefined) return val.severity;
-  return defaultSeverity;
-}
+import { resolveSeverity } from './utils.js';
 
 export function proveTopology(
   srcPath: string,
   tsconfigPath: string,
   config: {
-    rules: Record<string, any>;
+    rules: Record<string, RuleSeverity | RuleConfig>;
     bootstrapExclusions?: string[];
   },
+  existingProject?: Project,
 ): ProofResult[] {
   const results: ProofResult[] = [];
 
@@ -34,7 +24,7 @@ export function proveTopology(
     'warn',
   );
   if (alignSev !== false) {
-    results.push(proveConfigKeyAlignment(srcPath, tsconfigPath, alignSev));
+    results.push(proveConfigKeyAlignment(srcPath, tsconfigPath, alignSev, existingProject));
   }
 
   // Rule: no-direct-env-for-validated-keys
@@ -50,6 +40,7 @@ export function proveTopology(
         tsconfigPath,
         envSev,
         config.bootstrapExclusions || [],
+        existingProject,
       ),
     );
   }
@@ -57,7 +48,7 @@ export function proveTopology(
   // Rule: trust-proxy
   const trustSev = resolveSeverity(config.rules, 'trust-proxy', 'error');
   if (trustSev !== false) {
-    results.push(proveTrustProxyConfig(srcPath, tsconfigPath, trustSev));
+    results.push(proveTrustProxyConfig(srcPath, tsconfigPath, trustSev, existingProject));
   }
 
   return results;
@@ -67,8 +58,9 @@ function proveConfigKeyAlignment(
   srcPath: string,
   tsconfigPath: string,
   severity: Severity,
+  existingProject?: Project,
 ): ProofResult {
-  const { used, joi } = collectConfigKeys(srcPath, tsconfigPath);
+  const { used, joi } = collectConfigKeys(srcPath, tsconfigPath, existingProject);
   const joiKeySet = new Set(joi.map((k) => k.key));
 
   const violations: Violation[] = [];
@@ -108,9 +100,10 @@ function proveNoDirectEnvForValidatedKeys(
   tsconfigPath: string,
   severity: Severity,
   bootstrapExclusions: string[],
+  existingProject?: Project,
 ): ProofResult {
-  const directAccess = collectDirectEnvAccess(srcPath, tsconfigPath);
-  const { joi } = collectConfigKeys(srcPath, tsconfigPath);
+  const directAccess = collectDirectEnvAccess(srcPath, tsconfigPath, existingProject);
+  const { joi } = collectConfigKeys(srcPath, tsconfigPath, existingProject);
   const joiKeySet = new Set(joi.map((k) => k.key));
 
   const violations: Violation[] = [];
@@ -147,12 +140,15 @@ function proveTrustProxyConfig(
   srcPath: string,
   tsconfigPath: string,
   severity: Severity,
+  existingProject?: Project,
 ): ProofResult {
-  const project = new Project({
+  const project = existingProject ?? new Project({
     tsConfigFilePath: tsconfigPath,
     skipAddingFilesFromTsConfig: true,
   });
-  project.addSourceFilesAtPaths(`${srcPath}/**/main.ts`);
+  if (!existingProject) {
+    project.addSourceFilesAtPaths(`${srcPath}/**/main.ts`);
+  }
 
   const violations: Violation[] = [];
 

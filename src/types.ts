@@ -74,6 +74,10 @@ export interface Violation {
   detail: string;
 }
 
+export function isCheckResult(r: CheckResult | ProofResult): r is CheckResult {
+  return 'durationMs' in r;
+}
+
 export interface VerificationReport {
   timestamp: string;
   smoke?: { checks: CheckResult[]; passed: boolean };

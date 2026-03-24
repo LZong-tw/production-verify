@@ -4,6 +4,7 @@ import type {
   ProofResult,
   VerificationReport,
 } from '../types';
+import { isCheckResult } from '../types';
 
 export function githubActionsReporter(): Reporter {
   return {
@@ -12,14 +13,14 @@ export function githubActionsReporter(): Reporter {
     onResult(result: CheckResult | ProofResult): void {
       if (result.passed) return;
 
-      if ('durationMs' in result) {
+      if (isCheckResult(result)) {
         // CheckResult (smoke)
-        const r = result as CheckResult;
+        const r = result;
         const level = r.severity === 'warn' ? 'warning' : 'error';
         console.log(`::${level} title=Smoke: ${r.name}::${r.message}`);
       } else {
         // ProofResult
-        const r = result as ProofResult;
+        const r = result;
         for (const v of r.violations) {
           const file = v.file ? `file=${v.file}` : '';
           const line = v.line ? `,line=${v.line}` : '';
