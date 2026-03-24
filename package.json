@@ -47,9 +47,11 @@
   ],
   "license": "MIT",
   "packageManager": "pnpm@10.17.1",
+  "dependencies": {
+    "jiti": "^2.6.1"
+  },
   "devDependencies": {
     "@types/node": "^25.5.0",
-    "jiti": "^2.6.1",
     "ts-morph": "^27.0.2",
     "typescript": "^5.9.3",
     "unbuild": "^3.6.1",

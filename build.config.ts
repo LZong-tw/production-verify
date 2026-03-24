@@ -13,5 +13,5 @@ export default defineBuildConfig({
     emitCJS: true,
     inlineDependencies: false,
   },
-  externals: ['ts-morph'],
+  externals: ['ts-morph', 'jiti'],
 });

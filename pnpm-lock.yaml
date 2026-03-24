@@ -7,13 +7,14 @@ settings:
 importers:
 
   .:
+    dependencies:
+      jiti:
+        specifier: ^2.6.1
+        version: 2.6.1
     devDependencies:
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
-      jiti:
-        specifier: ^2.6.1
-        version: 2.6.1
       ts-morph:
         specifier: ^27.0.2
         version: 27.0.2
