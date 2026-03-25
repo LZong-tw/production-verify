@@ -40,7 +40,6 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepare": "unbuild",
     "prepublishOnly": "pnpm build"
   },
   "files": [
