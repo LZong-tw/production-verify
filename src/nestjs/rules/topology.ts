@@ -152,23 +152,12 @@ function proveTrustProxyConfig(
 
   const violations: Violation[] = [];
 
-  // Only check bootstrap files (main.ts or files containing NestFactory.create).
-  // Skip test files — they never configure trust proxy.
+  // Only check the main app bootstrap file (main.ts).
+  // Scripts, tests, and other files that happen to use NestFactory.create
+  // are not the production entry point and don't need trust proxy.
   const bootstrapFiles = project.getSourceFiles().filter((sf) => {
-    const filePath = sf.getFilePath();
-    // Skip test files
-    if (
-      filePath.includes('__tests__') ||
-      filePath.includes('.spec.') ||
-      filePath.includes('.test.')
-    ) {
-      return false;
-    }
-    // Include main.ts or files that bootstrap the NestJS app
-    const baseName = filePath.split('/').pop() ?? '';
-    if (baseName === 'main.ts') return true;
-    const text = sf.getFullText();
-    return text.includes('NestFactory.create');
+    const baseName = sf.getFilePath().split('/').pop() ?? '';
+    return baseName === 'main.ts';
   });
 
   for (const sourceFile of bootstrapFiles) {
