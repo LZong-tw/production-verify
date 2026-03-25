@@ -1,5 +1,5 @@
 {
-  "name": "@production-verify/core",
+  "name": "production-verify-core",
   "version": "0.1.0",
   "description": "Production verification framework — smoke tests + architecture proofs",
   "type": "module",
