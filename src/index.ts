@@ -11,4 +11,4 @@ export { runProofs } from './proof/engine';
 export { mergeContracts } from './proof/contracts';
 export { resolveReporters } from './reporter/index';
 export { extractCookies, formatCookies } from './smoke/session/index';
-export type * from './types';
+export * from './types';
