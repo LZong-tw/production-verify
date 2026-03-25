@@ -34,7 +34,8 @@ function collectConfigServiceKeys(
   for (const sourceFile of project.getSourceFiles()) {
     if (
       sourceFile.getFilePath().includes('__tests__') ||
-      sourceFile.getFilePath().includes('.spec.')
+      sourceFile.getFilePath().includes('.spec.') ||
+      sourceFile.getFilePath().includes('.test.')
     )
       continue;
 
