@@ -1,4 +1,5 @@
 import type { SessionProvider } from '../../types';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 import { extractCookies, formatCookies } from './index';
 
 export interface TurnstileBypassOptions {
@@ -19,7 +20,7 @@ export function turnstileBypass(options: TurnstileBypassOptions): SessionProvide
     }
 
     // Step 1: Get CSRF token
-    const csrfRes = await fetch(`${baseUrl}/api/auth/csrf-token`, {
+    const csrfRes = await fetchWithTimeout(`${baseUrl}/api/auth/csrf-token`, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
     });
     if (!csrfRes.ok) {
@@ -30,7 +31,7 @@ export function turnstileBypass(options: TurnstileBypassOptions): SessionProvide
     const csrfToken = csrfCookies['XSRF-TOKEN'] || '';
 
     // Step 2: Login with Turnstile bypass
-    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    const loginRes = await fetchWithTimeout(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

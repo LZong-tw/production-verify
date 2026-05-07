@@ -76,6 +76,7 @@ pnpm typecheck        # tsc --noEmit
 - **Severity is `'error' | 'warn' | 'info'`**: Never `'warning'`. This is enforced in the type system.
 - **ESM only**: Use `import`, not `require`. Use `import.meta.url`, not `__dirname`. The package has `"type": "module"`.
 - **Subpath exports**: `.` (core), `./nestjs`, `./infrastructure`. Each has its own entry in `build.config.ts` and `package.json` exports map.
+- **Every network fetch has a 15s timeout**: All smoke / session / infrastructure code uses `fetchWithTimeout()` from `src/lib/fetch-with-timeout.ts`, which wraps `fetch` with `signal: AbortSignal.timeout(15_000)`. Bare `fetch()` is forbidden in this package — Node's default fetch has no timeout, and a hung fetch in a CI smoke run is invisible (the GitHub Actions job is killed by its own timeout long after the smoke report would have been useful). When adding a new network call, use `fetchWithTimeout`; if you need a different timeout, pass it as the third arg, do not invent another wrapper.
 
 ## Testing
 
@@ -94,6 +95,18 @@ pnpm typecheck        # tsc --noEmit
 ```
 
 Build produces both `.mjs` (ESM) and `.cjs` (CJS) for each entry, plus `.d.ts` declarations.
+
+## Pitfalls
+
+### Bare `fetch()` hangs forever on slow / wedged endpoints
+
+**Date observed**: 2026-04-28 to 2026-05-06 (eight scheduled smoke runs at sugar-dating).
+
+Node's `fetch()` has no default timeout. When the target server (or anything in the path — Cloudflare, DNS, a Railway deploy mid-rollout) holds the TCP connection open without responding, the fetch promise simply does not resolve. The smoke runner has no way to make progress; the GitHub Actions job timeout eventually kills the worker, but by then the report has not been written and the only artifact is a "cancelled" status with no detail.
+
+Concrete failure mode at sugar-dating: 7 of 8 production-verify failures over a 9-day window were 15-minute job-level cancellations with empty `steps[]` and no log. Root cause was bare `fetch()` calls hanging during the `feat/domain-migration-sugarmeet` window — backend deploys, CORS reconfiguration, and Cloudflare DNS changes intermittently held connections.
+
+**Rule**: every fetch goes through `fetchWithTimeout()` (`src/lib/fetch-with-timeout.ts`). The default 15s ceiling is a forcing function — it converts an opaque hang into an `AbortError` that the smoke runner can attach to its report. Never paper over a slow endpoint by raising the timeout; investigate why it is slow.
 
 ## Known Limitations
 

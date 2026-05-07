@@ -1,5 +1,6 @@
-export { i as isCheckResult, r as resolveReporters, a as runProofs, b as runSmokeChecks, c as runVerification } from './shared/core.CKLSBlQx.mjs';
-export { m as mergeContracts } from './shared/core.aTx7fAzP.mjs';
+export { i as isCheckResult, r as resolveReporters, a as runProofs, b as runSmokeChecks, c as runVerification } from './shared/production-verify-core.CKLSBlQx.mjs';
+import { f as fetchWithTimeout } from './shared/production-verify-core.CMHpv3Dv.mjs';
+export { m as mergeContracts } from './shared/production-verify-core.aTx7fAzP.mjs';
 
 function defineVerifyConfig(config) {
   if (!config?.target?.baseUrl) {
@@ -32,7 +33,7 @@ function turnstileBypass(options) {
     if (!password) {
       throw new Error("Password is required for turnstile bypass authentication");
     }
-    const csrfRes = await fetch(`${baseUrl}/api/auth/csrf-token`, {
+    const csrfRes = await fetchWithTimeout(`${baseUrl}/api/auth/csrf-token`, {
       headers: { "X-Requested-With": "XMLHttpRequest" }
     });
     if (!csrfRes.ok) {
@@ -40,7 +41,7 @@ function turnstileBypass(options) {
     }
     const csrfCookies = extractCookies(csrfRes);
     const csrfToken = csrfCookies["XSRF-TOKEN"] || "";
-    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    const loginRes = await fetchWithTimeout(`${baseUrl}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +75,7 @@ function refreshToken(options) {
     throw new Error("Refresh token is required");
   }
   return async (baseUrl) => {
-    const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+    const res = await fetchWithTimeout(`${baseUrl}/api/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -117,7 +118,7 @@ function csrfFlow() {
     const start = Date.now();
     const name = "csrf-flow";
     try {
-      const res = await fetch(`${ctx.baseUrl}/api/auth/csrf-token`, {
+      const res = await fetchWithTimeout(`${ctx.baseUrl}/api/auth/csrf-token`, {
         headers: { "X-Requested-With": "XMLHttpRequest" }
       });
       const contentType = res.headers.get("content-type") || "";
@@ -190,7 +191,7 @@ function csrfEnforcement(options) {
     try {
       const headers = { ...ctx.session.headers };
       delete headers["x-csrf-token"];
-      const res = await fetch(`${ctx.baseUrl}${mutationPath}`, {
+      const res = await fetchWithTimeout(`${ctx.baseUrl}${mutationPath}`, {
         method: "PATCH",
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ __csrf_test: true })
@@ -247,7 +248,7 @@ function bootstrapBurst(n, options) {
       const headers = ctx.session?.headers || {};
       const results = await Promise.all(
         targetEndpoints.map(async (endpoint) => {
-          const res = await fetch(`${ctx.baseUrl}${endpoint}`, {
+          const res = await fetchWithTimeout(`${ctx.baseUrl}${endpoint}`, {
             headers: { ...headers }
           });
           return { endpoint, status: res.status };

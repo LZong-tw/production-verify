@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { c as runVerification } from './shared/core.CKLSBlQx.mjs';
+import { c as runVerification } from './shared/production-verify-core.CKLSBlQx.mjs';
 
 async function main() {
   const nodeVersion = parseInt(process.version.slice(1));

@@ -1,7 +1,8 @@
 'use strict';
 
-const runner = require('./shared/core.CSqx5afo.cjs');
-const contracts = require('./shared/core.CXbeKCK2.cjs');
+const runner = require('./shared/production-verify-core.CSqx5afo.cjs');
+const fetchWithTimeout = require('./shared/production-verify-core.1U8h7tqL.cjs');
+const contracts = require('./shared/production-verify-core.CXbeKCK2.cjs');
 
 function defineVerifyConfig(config) {
   if (!config?.target?.baseUrl) {
@@ -34,7 +35,7 @@ function turnstileBypass(options) {
     if (!password) {
       throw new Error("Password is required for turnstile bypass authentication");
     }
-    const csrfRes = await fetch(`${baseUrl}/api/auth/csrf-token`, {
+    const csrfRes = await fetchWithTimeout.fetchWithTimeout(`${baseUrl}/api/auth/csrf-token`, {
       headers: { "X-Requested-With": "XMLHttpRequest" }
     });
     if (!csrfRes.ok) {
@@ -42,7 +43,7 @@ function turnstileBypass(options) {
     }
     const csrfCookies = extractCookies(csrfRes);
     const csrfToken = csrfCookies["XSRF-TOKEN"] || "";
-    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    const loginRes = await fetchWithTimeout.fetchWithTimeout(`${baseUrl}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +77,7 @@ function refreshToken(options) {
     throw new Error("Refresh token is required");
   }
   return async (baseUrl) => {
-    const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+    const res = await fetchWithTimeout.fetchWithTimeout(`${baseUrl}/api/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -119,7 +120,7 @@ function csrfFlow() {
     const start = Date.now();
     const name = "csrf-flow";
     try {
-      const res = await fetch(`${ctx.baseUrl}/api/auth/csrf-token`, {
+      const res = await fetchWithTimeout.fetchWithTimeout(`${ctx.baseUrl}/api/auth/csrf-token`, {
         headers: { "X-Requested-With": "XMLHttpRequest" }
       });
       const contentType = res.headers.get("content-type") || "";
@@ -192,7 +193,7 @@ function csrfEnforcement(options) {
     try {
       const headers = { ...ctx.session.headers };
       delete headers["x-csrf-token"];
-      const res = await fetch(`${ctx.baseUrl}${mutationPath}`, {
+      const res = await fetchWithTimeout.fetchWithTimeout(`${ctx.baseUrl}${mutationPath}`, {
         method: "PATCH",
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ __csrf_test: true })
@@ -249,7 +250,7 @@ function bootstrapBurst(n, options) {
       const headers = ctx.session?.headers || {};
       const results = await Promise.all(
         targetEndpoints.map(async (endpoint) => {
-          const res = await fetch(`${ctx.baseUrl}${endpoint}`, {
+          const res = await fetchWithTimeout.fetchWithTimeout(`${ctx.baseUrl}${endpoint}`, {
             headers: { ...headers }
           });
           return { endpoint, status: res.status };

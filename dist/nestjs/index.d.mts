@@ -1,4 +1,4 @@
-import { N as NestJSPreset, a as NestJSProofOptions, P as ProofConfig } from '../shared/core.BPauvUXq.mjs';
+import { N as NestJSPreset, a as NestJSProofOptions, P as ProofConfig } from '../shared/production-verify-core.BPauvUXq.mjs';
 
 declare function nestjsDefaults(): NestJSPreset;
 

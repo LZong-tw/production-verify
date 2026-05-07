@@ -1,4 +1,5 @@
 import type { SmokeCheck, SmokeContext, CheckResult } from '../../types';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 
 const DEFAULT_ENDPOINTS = [
   '/api/auth/csrf-token',
@@ -36,7 +37,7 @@ export function bootstrapBurst(
 
       const results = await Promise.all(
         targetEndpoints.map(async (endpoint) => {
-          const res = await fetch(`${ctx.baseUrl}${endpoint}`, {
+          const res = await fetchWithTimeout(`${ctx.baseUrl}${endpoint}`, {
             headers: { ...headers },
           });
           return { endpoint, status: res.status };

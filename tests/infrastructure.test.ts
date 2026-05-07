@@ -144,7 +144,11 @@ describe('cloudflare.dns', () => {
 
     expect(fetchSpy).toHaveBeenCalledWith(
       'https://api.cloudflare.com/client/v4/zones/zone-abc/dns_records?name=test.com',
-      { headers: { Authorization: 'Bearer my-secret-token' } },
+      // fetchWithTimeout adds an AbortSignal alongside the caller's headers; use
+      // objectContaining so the assertion isn't tied to that implementation detail.
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer my-secret-token' },
+      }),
     );
   });
 });

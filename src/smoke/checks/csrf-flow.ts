@@ -1,4 +1,5 @@
 import type { SmokeCheck, SmokeContext, CheckResult } from '../../types';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 import { extractCookies } from '../session/index';
 
 export function csrfFlow(): SmokeCheck {
@@ -7,7 +8,7 @@ export function csrfFlow(): SmokeCheck {
     const name = 'csrf-flow';
 
     try {
-      const res = await fetch(`${ctx.baseUrl}/api/auth/csrf-token`, {
+      const res = await fetchWithTimeout(`${ctx.baseUrl}/api/auth/csrf-token`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
       });
 

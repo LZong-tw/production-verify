@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '../lib/fetch-with-timeout.js';
 import type { InfraConstraint, InfraResult } from '../types.js';
 
 export const vercel = {
@@ -12,7 +13,7 @@ export const vercel = {
           return { name: this.name, passed: true, actual: 'skipped (no VERCEL_TOKEN)', expected: opts.required.join(', ') };
         }
 
-        const res = await fetch(`https://api.vercel.com/v9/projects/${projectId}/env`, {
+        const res = await fetchWithTimeout(`https://api.vercel.com/v9/projects/${projectId}/env`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

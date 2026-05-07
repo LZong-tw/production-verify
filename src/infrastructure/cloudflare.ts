@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '../lib/fetch-with-timeout.js';
 import type { InfraConstraint, InfraResult } from '../types.js';
 
 export const cloudflare = {
@@ -11,7 +12,7 @@ export const cloudflare = {
         if (!token || !zoneId) {
           return { name: this.name, passed: true, actual: 'skipped (no CF_API_TOKEN)', expected: opts.mode };
         }
-        const res = await fetch(
+        const res = await fetchWithTimeout(
           `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?name=${opts.domain}`,
           { headers: { Authorization: `Bearer ${token}` } },
         );

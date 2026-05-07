@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const runner = require('./shared/core.CSqx5afo.cjs');
+const runner = require('./shared/production-verify-core.CSqx5afo.cjs');
 
 async function main() {
   const nodeVersion = parseInt(process.version.slice(1));

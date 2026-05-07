@@ -1,7 +1,7 @@
 'use strict';
 
 const tsMorph = require('ts-morph');
-const contracts = require('../shared/core.CXbeKCK2.cjs');
+const contracts = require('../shared/production-verify-core.CXbeKCK2.cjs');
 
 const HTTP_DECORATORS = [
   "Get",

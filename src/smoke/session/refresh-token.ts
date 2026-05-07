@@ -1,4 +1,5 @@
 import type { SessionProvider } from '../../types';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 import { extractCookies, formatCookies } from './index';
 
 export interface RefreshTokenOptions {
@@ -11,7 +12,7 @@ export function refreshToken(options: RefreshTokenOptions): SessionProvider {
   }
 
   return async (baseUrl: string) => {
-    const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+    const res = await fetchWithTimeout(`${baseUrl}/api/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

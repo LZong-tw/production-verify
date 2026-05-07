@@ -1,4 +1,5 @@
 import type { SmokeCheck, SmokeContext, CheckResult } from '../../types';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 
 export interface CsrfEnforcementOptions {
   mutationPath?: string;
@@ -26,7 +27,7 @@ export function csrfEnforcement(options?: CsrfEnforcementOptions): SmokeCheck {
       const headers: Record<string, string> = { ...ctx.session.headers };
       delete headers['x-csrf-token'];
 
-      const res = await fetch(`${ctx.baseUrl}${mutationPath}`, {
+      const res = await fetchWithTimeout(`${ctx.baseUrl}${mutationPath}`, {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({ __csrf_test: true }),

@@ -1,5 +1,7 @@
 'use strict';
 
+const fetchWithTimeout = require('../shared/production-verify-core.1U8h7tqL.cjs');
+
 const cloudflare = {
   dns(opts) {
     return {
@@ -11,7 +13,7 @@ const cloudflare = {
         if (!token || !zoneId) {
           return { name: this.name, passed: true, actual: "skipped (no CF_API_TOKEN)", expected: opts.mode };
         }
-        const res = await fetch(
+        const res = await fetchWithTimeout.fetchWithTimeout(
           `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?name=${opts.domain}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -45,7 +47,7 @@ const railway = {
             variables(projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId)
           }
         `;
-        const res = await fetch("https://backboard.railway.app/graphql/v2", {
+        const res = await fetchWithTimeout.fetchWithTimeout("https://backboard.railway.app/graphql/v2", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -90,7 +92,7 @@ const vercel = {
         if (!token || !projectId) {
           return { name: this.name, passed: true, actual: "skipped (no VERCEL_TOKEN)", expected: opts.required.join(", ") };
         }
-        const res = await fetch(`https://api.vercel.com/v9/projects/${projectId}/env`, {
+        const res = await fetchWithTimeout.fetchWithTimeout(`https://api.vercel.com/v9/projects/${projectId}/env`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();

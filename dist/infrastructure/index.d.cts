@@ -1,4 +1,4 @@
-import { I as InfraConstraint } from '../shared/core.BPauvUXq.cjs';
+import { I as InfraConstraint } from '../shared/production-verify-core.BPauvUXq.cjs';
 
 declare const cloudflare: {
     dns(opts: {

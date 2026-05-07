@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '../lib/fetch-with-timeout.js';
 import type { InfraConstraint, InfraResult } from '../types.js';
 
 export const railway = {
@@ -21,7 +22,7 @@ export const railway = {
           }
         `;
 
-        const res = await fetch('https://backboard.railway.app/graphql/v2', {
+        const res = await fetchWithTimeout('https://backboard.railway.app/graphql/v2', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,

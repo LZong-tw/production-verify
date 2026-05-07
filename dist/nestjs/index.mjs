@@ -1,5 +1,5 @@
 import { Project, Node } from 'ts-morph';
-import { m as mergeContracts } from '../shared/core.aTx7fAzP.mjs';
+import { m as mergeContracts } from '../shared/production-verify-core.aTx7fAzP.mjs';
 
 const HTTP_DECORATORS = [
   "Get",
